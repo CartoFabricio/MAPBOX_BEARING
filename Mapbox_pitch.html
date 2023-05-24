@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Real-time Location Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+
+    var userLocationMarker = new mapboxgl.Marker({
+      color: '#FF0000',
+      draggable: true
+    });
+
+    function updateLocationMarker(lng, lat) {
+      userLocationMarker.setLngLat([lng, lat]).addTo(map);
+    }
+
+    function getUserLocation() {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lng = position.coords.longitude;
+        var lat = position.coords.latitude;
+        updateLocationMarker(lng, lat);
+        map.flyTo({ center: [lng, lat], zoom: 16, bearing: userBearing });
+      });
+    }
+
+    function getUserBearing(event) {
+      if (event.absolute || event.webkitCompassHeading) {
+        const alpha = event.absolute ? event.alpha : event.webkitCompassHeading;
+        userBearing = 360 - alpha;
+      } else if (event.alpha !== null) {
+        userBearing = 360 - event.alpha;
+      }
+    }
+
+    var userBearing = 0;
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZmFicmljaW9hbW9yaW0iLCJhIjoiY2tsaWNsOHRkMmgwaDJucGN0NGJhd3psOSJ9.h665zPxHXNFNVIzh1cJeUQ';
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [0, 0], // Initial center before obtaining user location
+      zoom: 16
+    });
+
+    map.on('load', function() {
+      map.addControl(new mapboxgl.NavigationControl());
+      map.addControl(new mapboxgl.FullscreenControl());
+
+      // Obtain user's bearing using device orientation sensors
+      if ('ondeviceorientationabsolute' in window) {
+        window.addEventListener('deviceorientationabsolute', getUserBearing, true);
+      } else if ('ondeviceorientation' in window) {
+        window.addEventListener('deviceorientation', getUserBearing, true);
+      }
+
+      getUserLocation();
+      setInterval(getUserLocation, 5000); // Update location every 5 seconds
+    });
+  </script>
+</body>
+</html>
