@@ -2,76 +2,25 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Real-time Location Map</title>
+  <title>Egocentric AR Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@2.2.1/aframe-ar.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
   <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-
-  <script>
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZmFicmljaW9hbW9yaW0iLCJhIjoiY2tsaWNsOHRkMmgwaDJucGN0NGJhd3psOSJ9.h665zPxHXNFNVIzh1cJeUQ';
-
-    var userLocationMarker = new mapboxgl.Marker({
-      color: '#FF0000',
-      draggable: true
-    });
-
-    function updateLocationMarker(lng, lat) {
-      userLocationMarker.setLngLat([lng, lat]).addTo(map);
-    }
-
-    function getUserLocation() {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var lng = position.coords.longitude;
-        var lat = position.coords.latitude;
-        sessionStorage.setItem("lng", lng);
-        sessionStorage.setItem("lat", lat);
-        updateLocationMarker(lng, lat);
-        map.setCenter([lng, lat]);
-        map.flyTo({ center: [lng, lat], zoom: 18, pitch: 45, bearing: userBearing });
-      });
-    }
-
-    function getUserBearing(event) {
-      if (event.absolute || event.webkitCompassHeading) {
-        const alpha = event.absolute ? event.alpha : event.webkitCompassHeading;
-        userBearing = 360 - alpha;
-        map.easeTo({ bearing: userBearing, duration: 1000 });
-      } else if (event.alpha !== null) {
-        userBearing = 360 - event.alpha;
-        map.easeTo({ bearing: userBearing, duration: 1000 });
-      }
-    }
-
-    
-
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [-49.232580, -25.453163], // Initial center before obtaining user location
-      zoom: 18
-    });
-
-    map.on('load', function() {
-      map.addControl(new mapboxgl.NavigationControl());
-      map.addControl(new mapboxgl.FullscreenControl());
-
-      // Obtain user's bearing using device orientation sensors
-      if ('ondeviceorientationabsolute' in window) {
-        window.addEventListener('deviceorientationabsolute', getUserBearing, true);
-      } else if ('ondeviceorientation' in window) {
-        window.addEventListener('deviceorientation', getUserBearing, true);
-      }
-
-      getUserLocation();
-      setInterval(getUserLocation, 5000); // Update location every 5 seconds
-    });
-  </script>
+  <a-scene embedded arjs="sourceType: webcam;">
+    <a-camera gps-camera rotation-reader></a-camera>
+    <a-marker gps-entity-place="latitude: -25.453163; longitude: -49.232580;"></a-marker>
+  </a-scene>
 </body>
 </html>
