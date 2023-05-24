@@ -15,7 +15,7 @@
   <div id="map"></div>
 
   <script>
-    mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZmFicmljaW9hbW9yaW0iLCJhIjoiY2tsaWNsOHRkMmgwaDJucGN0NGJhd3psOSJ9.h665zPxHXNFNVIzh1cJeUQ';
 
     var userLocationMarker = new mapboxgl.Marker({
       color: '#FF0000',
@@ -30,8 +30,11 @@
       navigator.geolocation.getCurrentPosition(function(position) {
         var lng = position.coords.longitude;
         var lat = position.coords.latitude;
+        sessionStorage.setItem("lng", lng);
+        sessionStorage.setItem("lat", lat);
         updateLocationMarker(lng, lat);
-        map.flyTo({ center: [lng, lat], zoom: 16, bearing: userBearing });
+        map.setCenter([lng, lat]);
+        map.flyTo({ center: [lng, lat], zoom: 18, pitch: 45, bearing: userBearing });
       });
     }
 
@@ -39,20 +42,20 @@
       if (event.absolute || event.webkitCompassHeading) {
         const alpha = event.absolute ? event.alpha : event.webkitCompassHeading;
         userBearing = 360 - alpha;
+        map.easeTo({ bearing: userBearing, duration: 1000 });
       } else if (event.alpha !== null) {
         userBearing = 360 - event.alpha;
+        map.easeTo({ bearing: userBearing, duration: 1000 });
       }
     }
 
-    var userBearing = 0;
-
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZmFicmljaW9hbW9yaW0iLCJhIjoiY2tsaWNsOHRkMmgwaDJucGN0NGJhd3psOSJ9.h665zPxHXNFNVIzh1cJeUQ';
+    
 
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [0, 0], // Initial center before obtaining user location
-      zoom: 16
+      center: [-49.232580, -25.453163], // Initial center before obtaining user location
+      zoom: 18
     });
 
     map.on('load', function() {
